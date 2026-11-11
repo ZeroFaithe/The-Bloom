@@ -3,10 +3,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
-use App\Middleware\Admin;
-use App\Middleware\Auth;
 use App\Middleware\Csrf;
 use App\Middleware\Logger;
+use App\Middleware\Role;
 use Core\Request;
 use Core\Response;
 use Core\Session;
@@ -95,11 +94,11 @@ final class MiddlewareTest extends TestCase
         $this->assertSame(200, (new Csrf())->handle($request, $this->next())->getStatus());
     }
 
-    // ---- Auth (staff only) ----
+    // ---- Role with no values ('auth'): staff only ----
 
     public function test_auth_sends_guests_to_the_login_page(): void
     {
-        $response = (new Auth())->handle($this->request('GET'), $this->next());
+        $response = (new Role())->handle($this->request('GET'), $this->next());
 
         $this->assertSame(302, $response->getStatus());
         $this->assertSame('http://localhost/the_bloom/login', $response->getHeader('Location'));
@@ -111,7 +110,7 @@ final class MiddlewareTest extends TestCase
     {
         $this->loginAs('visitor');
 
-        $this->assertSame(403, (new Auth())->handle($this->request('GET'), $this->next())->getStatus());
+        $this->assertSame(403, (new Role())->handle($this->request('GET'), $this->next())->getStatus());
         $this->assertFalse($this->reachedController);
     }
 
@@ -119,30 +118,38 @@ final class MiddlewareTest extends TestCase
     {
         foreach (['editor', 'admin'] as $role) {
             $this->loginAs($role);
-            $this->assertSame(200, (new Auth())->handle($this->request('GET'), $this->next())->getStatus(), $role);
+            $this->assertSame(200, (new Role())->handle($this->request('GET'), $this->next())->getStatus(), $role);
         }
     }
 
-    // ---- Admin (admins only) ----
+    // ---- Role('admin') ('role:admin'): admins only ----
 
-    public function test_admin_blocks_editors(): void
+    public function test_admin_role_blocks_editors(): void
     {
         $this->loginAs('editor');
 
-        $this->assertSame(403, (new Admin())->handle($this->request('GET'), $this->next())->getStatus());
+        $this->assertSame(403, (new Role('admin'))->handle($this->request('GET'), $this->next())->getStatus());
         $this->assertFalse($this->reachedController);
     }
 
-    public function test_admin_blocks_guests(): void
+    public function test_admin_role_sends_guests_to_login(): void
     {
-        $this->assertSame(403, (new Admin())->handle($this->request('GET'), $this->next())->getStatus());
+        $this->assertSame(302, (new Role('admin'))->handle($this->request('GET'), $this->next())->getStatus());
+        $this->assertFalse($this->reachedController);
     }
 
-    public function test_admin_lets_admins_in(): void
+    public function test_admin_role_lets_admins_in(): void
     {
         $this->loginAs('admin');
 
-        $this->assertSame(200, (new Admin())->handle($this->request('GET'), $this->next())->getStatus());
+        $this->assertSame(200, (new Role('admin'))->handle($this->request('GET'), $this->next())->getStatus());
+    }
+
+    public function test_role_can_allow_several_roles(): void
+    {
+        $this->loginAs('visitor');
+
+        $this->assertSame(200, (new Role('editor', 'visitor'))->handle($this->request('GET'), $this->next())->getStatus());
     }
 
     // ---- Logger ----

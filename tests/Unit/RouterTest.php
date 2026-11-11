@@ -151,7 +151,7 @@ final class RouterTest extends TestCase
 
     public function test_middleware_aliases_come_from_config(): void
     {
-        // 'auth' is an alias in config/middleware.php; a guest gets sent to the login page.
+        // 'auth' is a short name in config.php; a guest gets sent to the login page.
         $router = new Router();
         $router->get('/admin', fn () => 'dashboard', ['auth']);
 
@@ -159,6 +159,19 @@ final class RouterTest extends TestCase
 
         $this->assertSame(302, $response->getStatus());
         $this->assertSame('http://localhost/the_bloom/login', $response->getHeader('Location'));
+    }
+
+    public function test_middleware_values_after_a_colon_are_passed_on(): void
+    {
+        // 'role:admin' builds new Role('admin'): an editor is turned away, an admin gets in.
+        $router = new Router();
+        $router->get('/admin/methods', fn () => 'methods', ['role:admin']);
+
+        $_SESSION['user'] = ['id' => 2, 'name' => 'Eddie', 'role' => 'editor'];
+        $this->assertSame(403, $router->dispatch($this->request('GET', '/admin/methods'))->getStatus());
+
+        $_SESSION['user'] = ['id' => 1, 'name' => 'Ana', 'role' => 'admin'];
+        $this->assertSame('methods', $router->dispatch($this->request('GET', '/admin/methods'))->getContent());
     }
 
     public function test_controller_class_and_method_handler(): void

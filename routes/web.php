@@ -9,7 +9,7 @@ use Core\Router;
 /** @var Core\Application $app */
 $router = $app->router;
 
-// Runs on every request (names come from config/middleware.php)
+// Runs on every request (names come from config.php)
 $router->use('logger');
 $router->use('csrf'); // only checks POST/PUT/DELETE
 
@@ -40,7 +40,7 @@ $router->group(['prefix' => '/admin', 'middleware' => ['auth']], function (Route
     $r->get('/videos/search', [AdminVideoController::class, 'search']);
 
     // Brewing methods (admins only)
-    $r->group(['prefix' => '/methods', 'middleware' => ['admin']], function (Router $r) {
+    $r->group(['prefix' => '/methods', 'middleware' => ['role:admin']], function (Router $r) {
         $r->get('/', [AdminMethodController::class, 'index']);
         $r->get('/create', [AdminMethodController::class, 'create']);
         $r->post('/', [AdminMethodController::class, 'store']);

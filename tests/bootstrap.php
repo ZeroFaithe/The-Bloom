@@ -13,7 +13,7 @@ define('BASE_PATH', dirname(__DIR__));
 
 require BASE_PATH . '/vendor/autoload.php';
 
-Config::setPath(BASE_PATH . '/config');
+Config::load(BASE_PATH . '/config.php');
 Config::set('app.base_url', 'http://localhost/the_bloom');
 Config::set('app.debug', false);
 Config::set('services.youtube.api_key', ''); // tests that need a key set their own fake one

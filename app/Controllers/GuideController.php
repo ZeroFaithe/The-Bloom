@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Models\Guide;
-use App\Models\GuideStep;
 use App\Models\Method;
 use App\Models\VideoCache;
 use App\Services\RecipeScaler;
@@ -57,7 +56,7 @@ class GuideController extends Controller
             return Response::error(404);
         }
 
-        $timeline = RecipeScaler::timeline(GuideStep::forGuide((int) $guide['id']));
+        $timeline = RecipeScaler::timeline(Guide::steps((int) $guide['id']));
 
         // The video plays from its saved ID; the title comes from video_cache. No API call here.
         $video = null;

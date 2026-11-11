@@ -14,7 +14,7 @@ class Application
     public function __construct(public readonly string $basePath)
     {
         Env::load($basePath . '/.env');
-        Config::setPath($basePath . '/config');
+        Config::load($basePath . '/config.php');
         Session::start();
 
         // On XAMPP the site may live at http://localhost/the-bloom, so strip that folder from the URL.

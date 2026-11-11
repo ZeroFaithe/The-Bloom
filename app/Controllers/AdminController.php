@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Models\Guide;
-use App\Models\GuideStep;
 use App\Models\Method;
 use App\Models\VideoCache;
 use App\Services\YouTubeService;
@@ -59,7 +58,7 @@ class AdminController extends Controller
             'Edit guide',
             url("/admin/guides/{$guide['id']}/update"),
             $guide,
-            GuideStep::forGuide((int) $guide['id'])
+            Guide::steps((int) $guide['id'])
         );
     }
 
@@ -271,7 +270,7 @@ class AdminController extends Controller
         }
 
         $newStatus = $guide['status'] === 'published' ? 'draft' : 'published';
-        if ($newStatus === 'published' && GuideStep::count('guide_id', (int) $guide['id']) === 0) {
+        if ($newStatus === 'published' && Guide::stepCount((int) $guide['id']) === 0) {
             Session::flash('error', 'Add at least one step before publishing this guide.');
             return $this->redirect(url('/admin/guides'));
         }

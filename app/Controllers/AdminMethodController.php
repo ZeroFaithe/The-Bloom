@@ -12,7 +12,7 @@ use Core\Session;
 use Core\Validator;
 use function Core\{slugify, url};
 
-/** Brewing methods (admins only — see the 'admin' middleware in routes/web.php). */
+/** Brewing methods (admins only — see 'role:admin' in routes/web.php). */
 class AdminMethodController extends Controller
 {
     public function index(Request $request): Response

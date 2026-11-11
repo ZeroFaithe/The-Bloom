@@ -69,6 +69,20 @@ class Guide extends Model
         return Database::query($sql, [$slug])->fetch() ?: null;
     }
 
+    /** A guide's steps (the guide_steps table), in order. */
+    public static function steps(int $guideId): array
+    {
+        return Database::query(
+            'SELECT * FROM guide_steps WHERE guide_id = ? ORDER BY step_number',
+            [$guideId]
+        )->fetchAll();
+    }
+
+    public static function stepCount(int $guideId): int
+    {
+        return (int) Database::query('SELECT COUNT(*) FROM guide_steps WHERE guide_id = ?', [$guideId])->fetchColumn();
+    }
+
     /**
      * Save a guide and its steps together: either everything is saved or nothing is.
      * Pass $id = null to create; returns the guide id.
@@ -80,17 +94,15 @@ class Guide extends Model
                 $id = (int) static::create($data + ['author_id' => $authorId]);
             } else {
                 static::update($id, $data);
-                GuideStep::deleteForGuide($id);
+                Database::query('DELETE FROM guide_steps WHERE guide_id = ?', [$id]);
             }
 
             foreach (array_values($steps) as $index => $step) {
-                GuideStep::create([
-                    'guide_id'         => $id,
-                    'step_number'      => $index + 1,
-                    'instruction'      => $step['instruction'],
-                    'duration_seconds' => $step['duration_seconds'],
-                    'pour_g'           => $step['pour_g'],
-                ]);
+                Database::query(
+                    'INSERT INTO guide_steps (guide_id, step_number, instruction, duration_seconds, pour_g)
+                     VALUES (?, ?, ?, ?, ?)',
+                    [$id, $index + 1, $step['instruction'], $step['duration_seconds'], $step['pour_g']]
+                );
             }
             return $id;
         });

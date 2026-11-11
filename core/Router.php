@@ -106,18 +106,24 @@ class Router
         // Build the "onion": the last middleware sits closest to the controller.
         $next = $core;
         foreach (array_reverse($stack) as $name) {
-            $class = $this->resolveMiddleware($name);
-            $next = function (Request $req) use ($class, $next): Response {
-                return (new $class())->handle($req, $next);
+            [$class, $args] = $this->resolveMiddleware($name);
+            $next = function (Request $req) use ($class, $args, $next): Response {
+                return (new $class(...$args))->handle($req, $next);
             };
         }
         return $next($request);
     }
 
-    /** 'auth' -> App\Middleware\Auth (see config/middleware.php). */
-    private function resolveMiddleware(string $name): string
+    /**
+     * Turns a short name into a class plus its values (see 'middleware' in config.php):
+     *   'auth'              -> [Role::class, []]
+     *   'role:admin,editor' -> [Role::class, ['admin', 'editor']]
+     */
+    private function resolveMiddleware(string $name): array
     {
-        return Config::get('middleware.' . $name, $name);
+        [$alias, $values] = array_pad(explode(':', $name, 2), 2, '');
+        $args = $values === '' ? [] : array_map('trim', explode(',', $values));
+        return [Config::get('middleware.' . $alias, $alias), $args];
     }
 
     private function callHandler(array|Closure $handler, Request $request): Response

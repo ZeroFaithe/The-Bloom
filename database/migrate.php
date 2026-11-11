@@ -18,7 +18,7 @@ use Core\Database;
 use Core\Env;
 
 Env::load(BASE_PATH . '/.env');
-Config::setPath(BASE_PATH . '/config');
+Config::load(BASE_PATH . '/config.php');
 
 $c = Config::get('database');
 $server = new PDO(
