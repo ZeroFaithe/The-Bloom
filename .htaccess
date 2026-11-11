@@ -1,0 +1,19 @@
+# Lets the project live in a XAMPP subfolder (http://localhost/the_bloom/)
+# while only public/ is reachable from the browser.
+
+# Never serve hidden files such as .env (passwords, API key), whatever else happens.
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^$ public/ [L]
+    RewriteRule (.*) public/$1 [L]
+</IfModule>
+
+# Without mod_rewrite the rules above do nothing and every file would be downloadable,
+# so block the whole project instead. (Fix: enable mod_rewrite in XAMPP's httpd.conf.)
+<IfModule !mod_rewrite.c>
+    Require all denied
+</IfModule>

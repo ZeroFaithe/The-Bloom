@@ -1,0 +1,10 @@
+# Don't show a file list for folders like /images/ or /uploads/.
+Options -Indexes
+
+# Send every request that isn't a real file to index.php (the front controller).
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>

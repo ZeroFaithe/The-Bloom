@@ -1,0 +1,22 @@
+CREATE TABLE guides (
+    id               INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    author_id        INT UNSIGNED NOT NULL,
+    method_id        INT UNSIGNED NOT NULL,
+    title            VARCHAR(150) NOT NULL,
+    slug             VARCHAR(170) NOT NULL,
+    summary          TEXT NULL,
+    difficulty       ENUM('beginner', 'intermediate', 'advanced') NOT NULL DEFAULT 'beginner',
+    coffee_g         DECIMAL(6,1) NOT NULL,
+    water_g          DECIMAL(7,1) NOT NULL,
+    temperature_c    TINYINT UNSIGNED NOT NULL DEFAULT 93,
+    status           ENUM('draft', 'published') NOT NULL DEFAULT 'draft',
+    youtube_video_id VARCHAR(20) NULL,
+    created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_guides_slug (slug),
+    KEY idx_guides_status (status),
+    KEY idx_guides_method (method_id),
+    CONSTRAINT fk_guides_author FOREIGN KEY (author_id) REFERENCES users (id),
+    CONSTRAINT fk_guides_method FOREIGN KEY (method_id) REFERENCES methods (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
